@@ -128,7 +128,7 @@ class ImgObj:
 class GenerateDemo(ImgObj):
     # TODO: implement a demo object, make parallel to the train demo, but for generating documents, use ball highlighting
     def __init__(self,table,doc_collection):
-        table.set_location(Coordinate(0,doc_height+100))
+        table.set_location(Coordinate(0,0))
         self.table = table
         self.doc_collection = doc_collection
 
@@ -625,6 +625,8 @@ class Label(Sticky):
 
 class LabelGroup(ImgObj):
     # TODO: implement labelgroup to hold two labls and allow for bins to be created for longer context windows
+    def __init__(self):
+        super().__init__()
 
 class Ball(ImgObj):
     # TODO: implement ball highlights (follow  sticky and bin as examples)

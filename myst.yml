@@ -3,10 +3,14 @@ version: 1
 project:
   id: 61a803f2-c388-4f06-9111-e200cd219bcf
   title: What is AI
+  jupyter: 
+    server:
+      url: http://localhost:8888/
+      token: my-jupyter-token
   # description:
   # keywords: []
   # authors: []
-  github: https://github.com/ml4sts-outreach/lm-unplugged
+  # github: https://github.com/ml4sts-outreach/lm-unplugged
   exclude:
     - '*.py'
   # To autogenerate a Table of Contents, run "myst init --write-toc"

@@ -1,0 +1,11 @@
+main {
+    scroll-snap-type: y mandatory;
+    height: 100vh;
+    overflow-y: auto;
+}
+
+.slide {
+    scroll-snap-align: center;
+    /* height: 100vh; */
+        /* overflow-y: scroll; */
+}

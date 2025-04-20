@@ -10,7 +10,7 @@ Use the button to the right to make this page interactive!
 
 ```{code-cell} python
 :tags: ["remove-cell"]
-from lmunplugged import Bin,Table, Ball, Sticky, Doc, Demo
+from lmunplugged import Bin,Table, Ball, Sticky, Doc, TrainDemo
 import ipywidgets as widgets
 from IPython.display import display, Markdown, HTML
 ```
@@ -62,6 +62,7 @@ display(layout)
 ```{code-cell} python
 :tags: ["remove-cell"]
 
+# TODO: fix this demo to use Doc.is_valid and to disable buttons at end fo doc instead of resetting
 initital_doc = ['green','blue','purple','blue','pink','blue','white']
 bin_colors = ['purple','blue','green','pink']
 allowed_colors = bin_colors + ['white']
@@ -74,7 +75,7 @@ color_tags = widgets.ColorsInput(
 my_doc = Doc.from_list(color_tags.value,max_width_words=5)
 to_train = Table.from_list(bin_colors)
 
-my_demo = Demo(to_train, my_doc)
+my_demo = TrainDemo(to_train, my_doc)
 
 html_output_demo= widgets.Output()
 with html_output_demo:

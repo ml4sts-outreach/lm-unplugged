@@ -15,7 +15,7 @@ It is currently not broadly installable, here we locally import it
 :::
 
 ```{code-cell} python
-from lmunplugged import Bin,Table, Ball, Sticky, Doc, Demo
+from lmunplugged import Bin,Table, Ball, Sticky, Doc, TrainDemo
 
 ```
 
@@ -57,7 +57,7 @@ train_doc = Doc.from_list(['green','blue','purple','blue','pink','blue','white']
                     max_width_words = 5)
 to_train = Table.from_list(['purple','blue','green','pink'])
 
-my_demo = Demo(to_train, train_doc)
+my_demo = TrainDemo(to_train, train_doc)
 my_demo
 ```
 

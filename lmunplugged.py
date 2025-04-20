@@ -123,14 +123,24 @@ class ImgObj:
         '''
         self.placement_loc = self.location + container_loc
         pass
-    
-class Demo(ImgObj):
-    def __init__(self, tab,doc,left=0,top=0):
+
+
+class GenerateDemo(ImgObj):
+    # TODO: implement a demo object, make parallel to the train demo, but for generating documents, use ball highlighting
+    def __init__(self,table,doc_collection):
+        table.set_location(Coordinate(0,doc_height+100))
+        self.table = table
+        self.doc_collection = doc_collection
+
+
+
+class TrainDemo(ImgObj):
+    def __init__(self, table,doc,left=0,top=0):
         self.doc = doc
         _,doc_height = doc.get_min_dims()
 
-        tab.set_location(Coordinate(0,doc_height+100))
-        self.table = tab
+        table.set_location(Coordinate(0,doc_height+100))
+        self.table = table
         self.active_paths = []
         self.location = Coordinate(left,top)
         self.cur_step = 0
@@ -275,6 +285,7 @@ class Table(ImgObj):
     
 
 class Bin(ImgObj):
+    # TODO: figure out how to make it possible to train with more balls
     bin_w_top = 140
     bin_bottom_offset = round(.25*bin_w_top)
     bin_h = 160
@@ -422,17 +433,32 @@ class Bin(ImgObj):
         # bias to bottom
         balls_at_height = lambda y: width_at_height(y)//(2*(Ball.radius+Ball.pad))
         # prev_bias = (1-prev_placed/)
+
+
+class DocCollection(ImgObj):
+    def __init__(self,doc_list=None):
+        # TODO: create a container that can hold mutliple documents,fill in the elements and other methods needed
+        self.doc_list = []
+        if doc_list:
+            for doc in doc_list:
+
+                doc.set_location(self.get_next_doc_loc())
+                self.doc_list.append(doc)
     
+    def get_next_doc_loc(self):
+        # calculate, probably align vertically
+        return Coordinate(0,0)
+
 class Doc(ImgObj):
     sticky_width = 100
     sticky_height = 60
     def __init__(self, sticky_list,word_spacing=10,left =0,top=0,
-            max_width_words = None):
+            max_width_words = None,end_token='#ffffff'):
         '''
         '''
         # self.words = sticky_list 
         # move stickies so that they do not overlap
-        
+        self.end_token = end_token
         self.word_spacing = word_spacing
         self.location = Coordinate(left,top)
         self.placement_loc = self.location
@@ -455,6 +481,13 @@ class Doc(ImgObj):
     def from_string(cls,doc_string,max_width_words=None):
         sticky_list = [Sticky(word) for word in doc_string.split()]
         return cls(sticky_list,max_width_words=max_width_words)
+    
+    def is_valid(self):
+        if self.words:
+            return self.words[-1].color == self.end_token
+        else:
+            # if empty, always valid
+            return True
     
     def reset_words(self,new_words):
         self.words = []
@@ -513,6 +546,7 @@ class Doc(ImgObj):
 
 
 class Word:
+    # TODO: add more shapes here
     symbol_shape_svg = {'star':PointList([(30,6), (36.6,22.8), (54,22.8), (39.6,35.4), (45,53) ,(30,42) ,
                                           (15,53), (20.4,35.4),( 6,22.8), (23.4,22.8)])}
     def __init__(self,color,symbol=''):
@@ -574,7 +608,8 @@ class Sticky(ImgObj):
         # relative move only on render
         self.placement_loc = self.location + container_loc       
         x,y = self.placement_loc.get_xy() 
-        
+
+        # TODO: enable sticky class to use the 'word' class, getting the shape here from there
         sticky = svg.Rect(x=x,y=y,
                       width=self.width, height=self.height, fill=self.color, 
                       stroke=self.stroke_color_highlight[highlight],
@@ -583,10 +618,16 @@ class Sticky(ImgObj):
         return [sticky] 
 
 class Label(Sticky):
+    # TODO: implement label and use it for bins
     def __init__(self, color, left_x=0, top_y=0, width=Bin.sticky_width, height=Bin.sticky_height):
         super().__init__(color, left_x, top_y, width, height)
 
+
+class LabelGroup(ImgObj):
+    # TODO: implement labelgroup to hold two labls and allow for bins to be created for longer context windows
+
 class Ball(ImgObj):
+    # TODO: implement ball highlights (follow  sticky and bin as examples)
     radius = 10
     pad = 2
     def __init__(self,color,cx=radius,cy=radius):
@@ -615,6 +656,7 @@ class Ball(ImgObj):
         self.placement_loc = self.location + container_loc       
         x,y = self.placement_loc.get_xy()
         
+        # TODO: make balls able to use word class to give a decoration here
         ball = svg.Circle(
                 cx=x, cy=y, r=Ball.radius,
                 fill=self.color,

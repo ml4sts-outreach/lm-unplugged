@@ -10,7 +10,17 @@ project:
   # description:
   # keywords: []
   # authors: []
-  # github: https://github.com/ml4sts-outreach/lm-unplugged
+  github: https://github.com/ml4sts-outreach/lm-unplugged
+  toc:
+    - file: index.md
+    - title: Workshop
+      children: 
+      - file: workshop.md
+      - file: interactive.md
+    - title: Trainer Resources
+      children:
+      - file: prep
+      - file: lowcode
   exclude:
     - '*.py'
   # To autogenerate a Table of Contents, run "myst init --write-toc"

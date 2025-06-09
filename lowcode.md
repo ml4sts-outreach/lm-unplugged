@@ -10,13 +10,12 @@ kernelspec:
 We have also developed a Python module that allows for a low-code version
 that will visualize the unplugged activity in a website or jupyter notebook.
 
-:::{warning}
-It is currently not broadly installable, here we locally import it
-:::
+```{warning}
+The package is currently not broadly installable (not packaged), here we locally import it
+```
 
 ```{code-cell} python
 from lmunplugged import Bin,Table, Ball, Sticky, Doc, TrainDemo
-
 ```
 
 We can load a preset from a file, just to display it:

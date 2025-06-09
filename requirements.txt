@@ -1,0 +1,7 @@
+svg.py
+numpy
+matplotlib
+pandas
+IPython
+jupyter-server
+ipykernel

@@ -5,7 +5,7 @@ project:
   title: What is AI
   jupyter: 
     server:
-      url: http://localhost:8888/
+      url: http://localhost:8898/
       token: my-jupyter-token
   # description:
   # keywords: []

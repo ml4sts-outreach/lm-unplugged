@@ -9,8 +9,8 @@ project:
       token: my-jupyter-token
   # description:
   # keywords: []
-  # authors: []
-  # github: https://github.com/ml4sts-outreach/lm-unplugged
+  authors: ["Sarah M Brown"]
+  github: https://github.com/ml4sts-outreach/lm-unplugged
   exclude:
     - '*.py'
   # To autogenerate a Table of Contents, run "myst init --write-toc"

@@ -19,5 +19,7 @@ site:
   options:
     style: style.css
     folders: True
+  domains:
+    - brownsarahm.curve.space
   #   favicon: favicon.ico
   #   logo: site_logo.png

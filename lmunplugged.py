@@ -1,4 +1,4 @@
-# from svg import SVG, Polygon, Rect, Circle, ViewBoxSpec,Path
+ # from svg import SVG, Polygon, Rect, Circle, ViewBoxSpec,Path
 import svg
 from random import random, shuffle
 from numpy import linspace
@@ -182,13 +182,25 @@ class TrainDemo(ImgObj):
 
     def train_next(self):
         self.cur_step += 1
+        
         if self.cur_step >=len(self.doc.words):
-            self.cur_step = 1
-
-        return self.train_step(self.cur_step)
+            return self.reset_training()
+        else:
+            return self.train_step(self.cur_step)
     
     def reset_training(self):
+        self.active_paths = []
+        prev = self.doc.get_word(self.cur_step-2)
+        
+        prev.set_highlight('normal')
+        cur = self.doc.get_word(self.cur_step-1)
+        cur.set_highlight('normal')
+
+        target_bin = self.table.bins[prev.name]
+        target_bin.set_highlight('normal')
+
         self.cur_step = 0
+        return self
         
 
 class Connector(ImgObj):

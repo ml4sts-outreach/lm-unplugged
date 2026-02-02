@@ -4,7 +4,7 @@ kernelspec:
   display_name: 'Python 3'
 ---
 
-# Low code Example
+# Low Code Version Library Demo
 
 
 We have also developed a Python module that allows for a low-code version
@@ -15,7 +15,7 @@ The package is currently not broadly installable (not packaged), here we locally
 ```
 
 ```{code-cell} python
-from lmunplugged import Bin,Table, Ball, Sticky, Doc, TrainDemo
+from lmunplugged import Bin,Table, Ball, Sticky, Doc, TrainDemo,SampleDemo
 ```
 
 We can load a preset from a file, just to display it:
@@ -68,8 +68,6 @@ my_demo.train_step(1)
 ```
 
 
-
-
 ```{code-cell} python
 my_demo.train_step(2)
 ```
@@ -95,6 +93,9 @@ my_demo.train_step(6)
 ```{code-cell} python
 print(my_demo.table.bins['green'].contents[0])
 ```
+
+## Sample
+
 
 ## Built up from components
 

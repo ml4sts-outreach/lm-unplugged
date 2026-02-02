@@ -8,6 +8,8 @@ kernelspec:
 
 Use the button to the right to make this page interactive! 
 
+
+
 ```{code-cell} python
 :tags: ["remove-cell"]
 from lmunplugged import Bin,Table, Ball, Sticky, Doc, TrainDemo
@@ -16,7 +18,7 @@ from IPython.display import display, Markdown, HTML
 ```
 
 
-When you click the button it iwll update the document
+When you click the button it will update the document. The (hidden) code block below uses IPython widgets to create a demo. 
 
 ```{code-cell} python
 :tags: ["hide-cell"]

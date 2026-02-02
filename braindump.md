@@ -1,5 +1,5 @@
 ---
-title: Welcome to My Landing Page
+title: LMs, Unplugged
 site:
   hide_outline: true
   hide_toc: true

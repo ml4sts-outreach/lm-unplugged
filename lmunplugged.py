@@ -66,7 +66,9 @@ class Coordinate:
     
     def __str__(self):
         return f"pt({self.x},{self.y})"
-
+    
+    def _repr_html_(self):
+        return f"pt({self.x},{self.y})"
       
 
 class PointList:
@@ -374,21 +376,21 @@ class Table(ImgObj):
             shuffle(ball_colors)
             cur_contents = [Ball(ci) for ci in ball_colors]
             
-            # make labelgroup or label
+            # cast to list if needed
             if isinstance(df.index,pd.MultiIndex):
                 bin_color = list(bin_color)
                 
             bin_list.append(Bin(bin_color,contents=cur_contents,bin_size=bin_size))
 
         return cls(bin_list,max_width_bins=max_width_bins)
-
-    def set_location(self,new_location,):
-        self.location =new_location
+    
+    
+    def set_location(self,new_location):
+        self.location = new_location
 
     def get_elements(self,container_loc = Coordinate(0,0)):
         
         self.placement_loc = self.location +container_loc
-        # print('rendering bins relative to table ',self.placement_loc)
         return  [ei for bin in self.bins.values() for ei in bin.get_elements(self.placement_loc)]
     
     def get_df(self):
@@ -455,9 +457,6 @@ bin_sizes = {'small':small_bin_size,
 
 class Bin(ImgObj):
     # TODO: expand more sizes or ways to let balls overlap
-    sticky_width = 30
-    sticky_height = 20
-    sticky_offset = 10
     pad = 5
     stroke_color_highlight = {'normal':bin_edge_color,
                         'previous':bin_edge_color,
@@ -466,7 +465,7 @@ class Bin(ImgObj):
                               'previous':2,
                         'focus':4}
     def __init__(self,color,left_x=0,top_y=0,contents=None,highlight='normal',
-                 bin_size = 'small'):
+                 bin_size = 'small', label_width = 30, label_height = 20):
         # set bin size
         for dim, val in bin_sizes[bin_size].items():
             setattr(self,dim,val)    
@@ -475,15 +474,20 @@ class Bin(ImgObj):
         if isinstance(color,list):
             self.n_labels = len(color)
             self.name = '-'.join(color)
-            self.label = LabelGroup([Label(c) for c in color])
+            self.label = Label([Sticky(c) 
+                            for c in color],
+                                    sticky_height=label_height,
+                                    sticky_width=label_width)
         else:
             self.n_labels = 1
             self.name = color
-            self.label = Label(color)
+            self.label = Label(Sticky(color)) 
+        
+        
 
             # self.color = resolve_color(color)
 
-        
+        self.label_offset = 10
         self.location = Coordinate(left_x,top_y)
         self.placement_loc = self.location
         self.base_points = PointList([(0,0), (self.bin_bottom_offset, self.bin_h), 
@@ -491,7 +495,7 @@ class Bin(ImgObj):
         
 
         self.contents = []
-        self.compute_coodinates()
+        self.compute_ball_coodinates()
         if contents:
             # place balls relatively
             for ball in contents:
@@ -535,7 +539,7 @@ class Bin(ImgObj):
                     stroke_width=self.stroke_width_highlight[highlight])
         
         
-        sticky_loc = self.placement_loc + (Bin.sticky_offset,0)
+        sticky_loc = self.placement_loc + (self.label_offset,0)
         sticky = self.label.get_elements(sticky_loc)
         
         # print('placing balls relative to ',self.placement_loc)
@@ -567,20 +571,21 @@ class Bin(ImgObj):
         
 
     
-    def compute_coodinates(self):
+    def compute_ball_coodinates(self):
         width_diff = 2*self.bin_bottom_offset
         center_min_width = self.bin_w_top -width_diff - 2*self.pad -2*Ball.radius
         usable_min_width = self.bin_w_top -2*self.bin_bottom_offset - 2*self.pad
         left_at_height = lambda y: y*self.bin_bottom_offset + Ball.radius + self.pad
         usable_width_at_height = lambda y: (1-y)*width_diff + usable_min_width
         center_width_at_height = lambda y: (1-y)*width_diff + center_min_width
-        usable_height = self.bin_h-(self.pad+self.sticky_height)
+        _, label_height = self.label.get_min_dims()
+        usable_height = self.bin_h-(self.pad+ label_height)
         center_usable_height = usable_height-2*Ball.radius
         max_vert_balls = usable_height//(2*(Ball.radius+Ball.pad))
         # bias to bottom
         balls_at_height = lambda y: int(usable_width_at_height(y)//(2*(Ball.radius+Ball.pad)))
 
-        coords = [[Coordinate(left_at_height(rel_y)+x,rel_y*center_usable_height+Bin.pad+Bin.sticky_height)
+        coords = [[Coordinate(left_at_height(rel_y)+x,rel_y*center_usable_height+Bin.pad+label_height)
                                 for x in linspace(0,center_width_at_height(rel_y),num=balls_at_height(rel_y))]
                                             for rel_y in linspace(1,0,max_vert_balls) ]
         [shuffle(row) for row in coords]
@@ -597,10 +602,10 @@ class Bin(ImgObj):
         min_width = self.bin_w_top -2*self.bin_bottom_offset - 2*Bin.pad -Ball.radius
         left_at_height = lambda y: y*self.bin_bottom_offset + Ball.radius + Bin.pad
         width_at_height = lambda y: (1-y)*width_diff + min_width
-        usable_height = self.bin_h-(2*Ball.radius+Bin.pad+Bin.sticky_height)
+        usable_height = self.bin_h-(2*Ball.radius+Bin.pad + self.sticky_height)
         # random location within the height
         rel_y = random()
-        candidate_y = rel_y*usable_height +Bin.pad + Ball.radius+Bin.sticky_height
+        candidate_y = rel_y*usable_height +Bin.pad + Ball.radius + self.sticky_height
 
         # random location within the width at that height 
         rel_x = random()
@@ -615,7 +620,7 @@ class Bin(ImgObj):
         usable_min_width = Bin.bin_w_top -2*Bin.bin_bottom_offset - 2*Bin.pad
         left_at_height = lambda y: y*Bin.bin_bottom_offset + Ball.radius + Bin.pad
         width_at_height = lambda y: (1-y)*width_diff + usable_min_width
-        usable_height = Bin.bin_h-(Bin.pad+Bin.sticky_height)
+        usable_height = Bin.bin_h-(Bin.pad+self.label_height)
         center_usable_height = usable_height-2*Ball.radius
         max_vert_balls = usable_height//(2*(Ball.radius+Ball.pad))
         # bias to bottom
@@ -624,25 +629,79 @@ class Bin(ImgObj):
 
 
 class DocCollection(ImgObj):
-    def __init__(self,doc_list=None):
+    def __init__(self,doc_list=None, max_width_words = 10, sticky_width = 50, 
+                 sticky_height = 30, vertical_pad = 5,location=Coordinate(0,0)):
         # TODO: create a container that can hold mutliple documents,fill in the elements and other methods needed
         self.doc_list = []
+        self.max_width_words = max_width_words
+        self.sticky_width = sticky_width
+        self.sticky_height = sticky_height
+        self.vertical_pad = vertical_pad
+        self.location = location
+
+
         if doc_list:
             for doc in doc_list:
+                self.add_doc(doc)
 
-                doc.set_location(self.get_next_doc_loc())
-                self.doc_list.append(doc)
+    def get_elements(self, container_loc=Coordinate(0, 0)):
+
+        return [doc.get_elements(self.location + container_loc)
+                for doc in self.doc_list]
     
     def get_next_doc_loc(self):
+        # sum the hieghts to account for which might have wrapped vs not
+        heights = [doc.get_min_dims()[1] for doc in self.doc_list ]
+        total_height = sum(heights) + len(self.doc_list)*self.vertical_pad
+            
         # calculate, probably align vertically but with wrapping optionally
-        return Coordinate(0,0)
+        return Coordinate(0, total_height)
+    
+    def add_doc(self,doc):
+        
+        if isinstance(doc,Doc):
+            # if doc is a Doc object, add it
+
+            doc.set_size(self.sticky_width,self.sticky_height,
+                         max_width_words=self.max_width_words)
+            doc.set_location(self.get_next_doc_loc())
+            self.doc_list.append(doc)
+        elif isinstance(doc,list):
+            # if doc is a list of words, create a new doc
+            new_doc = Doc.from_list(doc,max_width_words=self.max_width_words,
+                                    sticky_width=self.sticky_width,
+                                    sticky_height=self.sticky_height)
+            new_doc.set_location(self.get_next_doc_loc())
+            self.doc_list.append(new_doc)
+        elif isinstance(doc,str):
+            # if doc is a string, create a new doc from string
+            new_doc = Doc.from_string(doc,max_width_words=self.max_width_words,
+                                    sticky_width=self.sticky_width,
+                                    sticky_height=self.sticky_height)
+            new_doc.set_location(self.get_next_doc_loc())
+            self.doc_list.append(new_doc)
+        else:
+            raise ValueError("doc should be either a Doc object, list of words or a string")
+        
+        return self
+    
+    def get_min_dims(self):
+        # compute size of set of stickies
+        if not self.doc_list:
+            return 0,0
+        
+        # get the farthest points of all docs
+        far_points = PointList([doc.get_min_dims() for doc in self.doc_list]) + self.location
+        return far_points.get_min_dims()
 
 
 class StickyContainer(ImgObj):
-    sticky_width = 100
-    sticky_height = 60
+    '''
+    A container for stickes, size can be set to use it for either documents for 
+    '''
     def __init__(self, sticky_list,word_spacing=10,left =0,top=0,
-            max_width_words = None,end_token='#ffffff',context_len=1):
+            max_width_words = None,  sticky_width = 100, 
+            sticky_height = 60, end_token='#ffffff',context_len=1):
         '''
         '''
         # self.words = sticky_list 
@@ -658,19 +717,50 @@ class StickyContainer(ImgObj):
         else:
             self.word_wrap = False
         
+        self.sticky_width = sticky_width
+        self.sticky_height = sticky_height
+        
         self.words = []
         for cur_word in sticky_list:
             self.add_word(cur_word)
+
+        
+
     
     @classmethod
-    def from_list(cls,word_list,max_width_words=None,context_len=1):
+    def from_list(cls,word_list,max_width_words=None,context_len=1, 
+                  sticky_width = 100, sticky_height = 60,):
         sticky_list = [Sticky(word) for word in word_list]
-        return cls(sticky_list,max_width_words=max_width_words,context_len=context_len)
+        return cls(sticky_list,max_width_words=max_width_words,
+                   context_len=context_len, sticky_height=sticky_height,
+                   sticky_width=sticky_width)
     
     @classmethod
-    def from_string(cls,doc_string,max_width_words=None):
-        sticky_list = [Sticky(word) for word in doc_string.split()]
-        return cls(sticky_list,max_width_words=max_width_words)
+    def from_string(cls,doc_string,max_width_words=None,context_len=1,
+                    sticky_width = 100, sticky_height = 60,sep=' '):
+        
+        sticky_list = [Sticky(word) for word in doc_string.split(sep)]
+        return cls(sticky_list,max_width_words=max_width_words,
+                   context_len=context_len, sticky_height=sticky_height,
+                   sticky_width=sticky_width)
+    
+    def set_size(self,sticky_width=None,sticky_height=None,
+                 max_width_words=None):
+        
+        if sticky_width:
+            self.sticky_width = sticky_width
+
+        if sticky_height:
+            self.sticky_height = sticky_height
+
+        if max_width_words:
+            self.word_wrap = True
+            self.words_per_row = max_width_words
+
+        # reset word locations
+        for i,cur_word in enumerate(self.words):
+            cur_word.set_size(self.sticky_width,self.sticky_height)
+            cur_word.set_location(self.get_next_word_loc(i))
     
     def is_valid(self):
         if self.words:
@@ -732,8 +822,10 @@ class StickyContainer(ImgObj):
         return self
     
 
-    def get_next_word_loc(self):
-        cur_word_num = len(self.words) 
+    def get_next_word_loc(self, cur_word_num=None):
+        if cur_word_num is None:
+            cur_word_num = len(self.words) 
+
         if self.word_wrap:
             row = cur_word_num//self.words_per_row
             position_in_row = cur_word_num%self.words_per_row
@@ -745,15 +837,24 @@ class StickyContainer(ImgObj):
     
 
 class Doc(StickyContainer):
-    sticky_width = 100
-    sticky_height = 60
+    '''
+    a document, that consists of several stickies
+    '''
+    
+    def __init__(self, sticky_list,word_spacing=10,left =0,top=0,
+            max_width_words = None,end_token='#ffffff',context_len=1,
+            sticky_width = 100,sticky_height = 60):
+        super().__init__(sticky_list,word_spacing=word_spacing,left=left,top=top,
+                         max_width_words=max_width_words,end_token=end_token,
+                         context_len=context_len,sticky_height=sticky_height,
+                         sticky_width=sticky_width)        
 
-class MiniDoc(StickyContainer):
-    sticky_width = 50
-    sticky_height = 30
 
 
 class Word:
+    '''
+    un-used draft concept of a more general word beyond a rectangle
+    '''
     # TODO: add more shapes here
     symbol_shape_svg = {'star':PointList([(30,6), (36.6,22.8), (54,22.8), (39.6,35.4), (45,53) ,(30,42) ,
                                           (15,53), (20.4,35.4),( 6,22.8), (23.4,22.8)])}
@@ -776,6 +877,10 @@ class Word:
         return 
 
 class Sticky(ImgObj):
+    '''
+    rectangle in a specific color, size can be set, to be used either for labeling bins
+    or for creating documents
+    '''
     stroke_color_highlight = {'normal':bin_fill_color,
                         'previous':faded_edge_color,
                         'focus':bin_edge_color}
@@ -783,7 +888,7 @@ class Sticky(ImgObj):
                               'previous':5,
                         'focus':5}
     default_shape = svg.Rect
-    def __init__(self,color,left_x=0,top_y=0,width=Doc.sticky_width,height=Doc.sticky_height,
+    def __init__(self,color,left_x=0,top_y=0,width=100,height=60,
                  highlight='normal'):
         # Define dimensions and central positions for bin components
         self.color = resolve_color(color)
@@ -811,6 +916,19 @@ class Sticky(ImgObj):
 
     def set_highlight(self,new_highlight):
         self.highlight = new_highlight
+
+    def set_size(self,width=None,height=None):
+        
+        if width:
+            self.width = width
+
+        if height:
+            self.height = height
+    
+    def get_min_dims(self):
+        # compute size of set of sticky + its location
+        far_points = PointList([(self.width,self.height)]) + self.placement_loc
+        return far_points.get_min_dims()
     
     def get_elements(self,container_loc=Coordinate(0,0),highlight=None):
         # highlight at render does not set attribute
@@ -820,7 +938,7 @@ class Sticky(ImgObj):
         self.placement_loc = self.location + container_loc       
         x,y = self.placement_loc.get_xy() 
 
-        # TODO: enable sticky class to use the 'word' class, getting the shape here from there
+        # TODO: enable sticky class to be inherited by the 'word' class, getting the shape here from there
         sticky = svg.Rect(x=x,y=y,
                       width=self.width, height=self.height, fill=self.color, 
                       stroke=self.stroke_color_highlight[highlight],
@@ -831,21 +949,34 @@ class Sticky(ImgObj):
     def __str__(self):
         return self.get_elements()[0].as_str()
 
-class Label(Sticky):
-    def __init__(self, color, left_x=0, top_y=0, width=Bin.sticky_width, height=Bin.sticky_height):
-        super().__init__(color, left_x, top_y, width, height)
+# class Label(Sticky):
+#     '''
+#     Sticky of size to label a bin
+#     '''
+#     def __init__(self, color, left_x=0, top_y=0, width=30, height=20):
+#         super().__init__(color, left_x, top_y, width, height)
 
 
-class LabelGroup(StickyContainer):
-
-    sticky_width = Bin.sticky_width
-    sticky_height = Bin.sticky_height
-    def __init__(self, labels):
-        context_length = len(labels)
-        super().__init__(labels,context_len=context_length,
-                         max_width_words=context_length,)
+class Label(StickyContainer):
+    '''
+    container for multiple stickes to be used as a label on a bin
+    '''
+    
+    def __init__(self, labels, word_spacing= 5, sticky_width=30, sticky_height=20):
+        if isinstance(labels,list):
+            context_length = len(labels)
+        else:
+            context_length = 1
+            labels = [labels]
+        
+        super().__init__(labels,context_len=context_length,word_spacing=word_spacing,
+                         max_width_words=context_length,sticky_height=sticky_height,
+                         sticky_width=sticky_width)
 
 class Ball(ImgObj):
+    '''
+    balls that go in bins
+    '''
     radius = 10
     pad = 2
 

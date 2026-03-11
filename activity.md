@@ -11,6 +11,7 @@ kernelspec:
 :class: dropdown
 :open: true
 
+a note!
 :::
 
 
@@ -69,20 +70,23 @@ this is what the neural network describes
 :::
 
 
+
 ## A Tiny Language for a Small model
 
 We need Large models to describe and mimic complex things like natural spoken languages (eg English, ...) and the many programming languages. To make it something small enough we can really get a good idea of, we will use a small langauge. 
 
-
+<!-- puttnig this in a cell should hide the code, but still let it :tags: [remove-input] -->
 ```{code-cell} python
-:tags: [remove-input]
+
 from lmunplugged import Bin,Table, Ball, Sticky, Doc, TrainDemo
 ```
 
 Our language will have just four words and one symbol for end of document.  We will "write" in the language using sticky notes in five different colors. 
 
+<!-- :tags: [remove-input] -->
+
 ```{code-cell} python
-:tags: [remove-input]
+
 vocab_list = [Sticky('purple'), Sticky('blue'),Sticky('green'),  Sticky('pink'),  Sticky('white')]
 vocab = Doc(vocab_list)
 vocab
@@ -150,7 +154,7 @@ while not(sampled_word=='white'):
 doc
 ```
 
-Let's  propmt with a few more times and draw additional documents. 
+Let's  prompt with a few more times and draw additional documents. 
 
 ```{code-cell} python
 :tags: [remove-input]
@@ -245,7 +249,7 @@ purpur = Bin(['purple','purple'])
 purpur
 ```
 
-
+<!-- fill this in to be a complete explanation -->
 
 ### Impact of Training
 

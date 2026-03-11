@@ -4,6 +4,12 @@ an introduction to language models, unplugged
 
 ## Fully local interactive:
 
+dependencies:
+- myst
+- jupyter
+
+
+run the following: 
 ```bash
 # Set the port for our local Jupyter process
 port="8898"
@@ -14,8 +20,8 @@ export JUPYTER_BASE_URL="http://localhost:${port}"
 export JUPYTER_TOKEN="lm-unplugged-tok"
 
 # Start the Jupyter server re-using the variables above
-jupyter server --IdentityProvider.token="${JUPYTER_TOKEN}" --ServerApp.token="${JUPYTER_TOKEN}" --ServerApp.port="${port}"  --ServerApp.allow_origin='http://localhost:3001' &
+jupyter server --IdentityProvider.token="${JUPYTER_TOKEN}" --ServerApp.token="${JUPYTER_TOKEN}" --ServerApp.port="${port}"  --ServerApp.allow_origin='http://localhost:3008' &
 # Run the MyST build
 # It will use the JUPYTER_* variables above to look for the server.
-myst start --execute
+myst start --execute --port 3008
 ```

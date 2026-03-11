@@ -9,9 +9,9 @@ kernelspec:
 Use the button to the right to make this page interactive! 
 
 
+<!-- :tags: ["remove-cell"] -->
 
 ```{code-cell} python
-:tags: ["remove-cell"]
 from lmunplugged import Bin,Table, Ball, Sticky, Doc, TrainDemo
 import ipywidgets as widgets
 from IPython.display import display, Markdown, HTML
